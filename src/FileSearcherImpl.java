@@ -4,11 +4,12 @@ import java.util.Set;
 
 public class FileSearcherImpl implements FileSeacher{
     private final File folder;
-    private Set<String> listF;
 
-    public FileSearcherImpl(String folder) {
+    private MyMonitorBuffer monitor;
+
+    public FileSearcherImpl(String folder, MyMonitorBuffer monitor) {
         this.folder = new File(folder);
-        listF = new HashSet<>();
+        this.monitor = monitor;
         listFiles(this.folder);
     }
 
@@ -21,13 +22,10 @@ public class FileSearcherImpl implements FileSeacher{
             if(entry.isDirectory()){
                 listFiles(entry);
             }else{
-
-                listF.add(entry.getPath());
+                monitor.putFile(entry.getPath());
             }
         }
     }
 
-    public Set<String> getListF() {
-        return this.listF;
-    }
+
 }

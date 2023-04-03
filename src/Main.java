@@ -1,12 +1,13 @@
 public class Main {
     public static void main(String[] args) {
-        FileSeacher list = new FileSearcherImpl("D:\\Desktop\\test");
+        MyMonitorBuffer monitor = new MyMonitorBuffer();
+        FileSeacher list = new FileSearcherImpl("D:\\Desktop\\test", monitor);
         Thread th = new Thread(list);
         th.start();
         try {
             th.join();
             if(!th.isAlive()){
-                for (String file : list.getListF()){
+                for (String file : monitor.getListF()){
                     System.out.println(file);
                 }
             }

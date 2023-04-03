@@ -43,7 +43,7 @@ public class MyMonitorBuffer {
             listF.add(path);
             notEmptyListFile.signal();
         }finally {
-            mutexProcessed.unlock();
+            mutexFileReader.unlock();
         }
 
     }
@@ -58,7 +58,7 @@ public class MyMonitorBuffer {
             listF.remove(listF.stream().findFirst());
             return mom;
         }finally {
-            
+            mutexFileReader.unlock();
         }
     }
 
@@ -75,6 +75,16 @@ public class MyMonitorBuffer {
 
     }
 
+    public Collection<String> getListF() {
+        try{
+            mutexFileReader.lock();
+            return this.listF;
+        }finally {
+            mutexFileReader.unlock();
+        }
+
+    }
+/*
     public boolean isEmptyListProcessed() throws InterruptedException{
         try{
             mutexProcessed.lock();
@@ -83,6 +93,6 @@ public class MyMonitorBuffer {
             mutexProcessed.unlock();
         }
     }
-
+*/
 
 }
