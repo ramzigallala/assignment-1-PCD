@@ -1,61 +1,48 @@
-import com.sun.source.tree.WhileLoopTree;
-
 public class Controller implements Runnable{
-    //TODO numThread trasformare in un phaser
-    private int numThread;
-    private MonitorBufferResult bagOfResult;
-    private MonitorBufferTask bagOfTask;
+    private final MyLatch phaser;
+    private final MonitorBufferResult bagOfResult;
+    private final MonitorBufferTask bagOfTask;
 
-    private Thread th;
+    private final Thread threadSearcher;
 
-    public Controller(MonitorBufferResult bagOfResult, int numThread) {
-        this.numThread = numThread;
+    public Controller(MonitorBufferResult bagOfResult, MyLatch phaser) {
+        this.phaser = phaser;
         this.bagOfResult = bagOfResult;
 
         bagOfTask = new MonitorBufferTask();
-        FileSeacher list = new FileSearcherImpl("D:\\Desktop\\prova", bagOfTask);
-        th = new Thread(list);
-        th.start();
-        decNumThread();
+        FileSeacher list = new FileSearcherImpl("D:\\Desktop\\prova", bagOfTask, phaser);
+        threadSearcher = new Thread(list);
+        phaser.takeThread();
+        threadSearcher.start();
+
+
 
     }
 
     @Override
     public void run() {
-
-        while(th.isAlive() || !bagOfTask.isEmpty()){
-            System.out.println(bagOfTask.isEmpty());
-
+        while(threadSearcher.isAlive() || !bagOfTask.isEmpty()){
             addThread();
 
         }
-        System.out.println("fuori");
+        phaser.releaseThread();
 
     }
     private synchronized void addThread() {
         if(!bagOfTask.isEmpty()){
-            if(getNumThread()!=0){
+
+            if(threadAvailable()){
                 try {
-                    new Thread(new FileProcessor(bagOfResult, bagOfTask.getFile(), this)).start();
+                    new Thread(new FileProcessor(bagOfResult, bagOfTask.getFile(), phaser)).start();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                decNumThread();
+                phaser.takeThread();
             }
-
         }
     }
-    public synchronized int getNumThread() {
-        return this.numThread;
-    }
-
-    public synchronized void decNumThread() {
-        this.numThread--;
-    }
-
-    public synchronized void addNumThread() {
-        this.numThread++;
-
+    public synchronized boolean threadAvailable() {
+        return phaser.getNWorkersOnline()<(phaser.getNWorkers()-1);
     }
 
 }
