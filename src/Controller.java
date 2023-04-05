@@ -1,3 +1,5 @@
+import java.util.List;
+
 public class Controller implements Runnable{
     private final MyLatch phaser;
     private final MonitorBufferResult bagOfResult;
@@ -23,11 +25,21 @@ public class Controller implements Runnable{
     public void run() {
         while(threadSearcher.isAlive() || !bagOfTask.isEmpty()){
             addThread();
-
+            //firstDPlaces();
         }
+
         phaser.releaseThread();
 
+
     }
+/*
+    private void firstDPlaces() throws InterruptedException {
+        if(phaser.getNWorkersOnline()==1){
+            final List<Pair<String,Long>> list = bagOfResult.getListProcessed().stream().toList();
+            for(int i = 0; i<5; i++) System.out.println(list.get(i).getNameFile()+" "+ list.get(i).getLineFile());
+        }
+    }
+*/
     private synchronized void addThread() {
         if(!bagOfTask.isEmpty()){
 

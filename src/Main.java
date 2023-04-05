@@ -1,3 +1,5 @@
+import java.util.List;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -10,7 +12,19 @@ public class Main {
         phaser.takeThread();
         th2.start();
         phaser.join();
-        System.out.println("numdfSFFds: "+numThread);
+
+        final List<Pair<String,Long>> list;
+        try {
+            list = monitorResult.getListProcessed().stream().toList();
+            for(int i = 0; i<5; i++) System.out.println(list.get(i).getNameFile()+" "+ list.get(i).getLineFile());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        
+
+        //System.out.println("numdfSFFds: "+numThread);
+        /*
         try {
             for (Pair<String, Long> entry: monitorResult.getListProcessed()) {
                 System.out.println(entry.getNameFile()+ " "+ entry.getLineFile());
@@ -18,7 +32,7 @@ public class Main {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
+*/
 
 
     }

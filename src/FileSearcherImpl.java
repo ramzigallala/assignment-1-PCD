@@ -29,7 +29,7 @@ public class FileSearcherImpl implements FileSeacher{
     }
 
     private boolean isFileJava(String path){
-        return path.toLowerCase().endsWith(".java");
+        return path.toLowerCase().endsWith(".txt");
     }
 
 

@@ -28,8 +28,4 @@ public class Pair<String, Double> {
         return nameFile.equals(obj.nameFile);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(nameFile, lineFile);
-    }
 }
