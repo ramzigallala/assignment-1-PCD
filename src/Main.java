@@ -1,9 +1,8 @@
 public class Main {
+    ;
     public static void main(String[] args) {
-        MyMonitorBuffer monitor = new MyMonitorBuffer();
-        FileSeacher list = new FileSearcherImpl("D:\\Desktop\\test", monitor);
-        Thread th = new Thread(list);
-        th.start();
+        int numThread=5;
+        /*
         try {
             th.join();
             if(!th.isAlive()){
@@ -14,6 +13,15 @@ public class Main {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+*/
+        MonitorBufferResult monitorResult = new MonitorBufferResult();
+        numThread = 4;
+        Controller controller = new Controller(monitorResult,numThread);
+        Thread th2 = new Thread(controller);
+        th2.start();
+
+
+
 
 
 

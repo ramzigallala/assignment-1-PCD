@@ -1,7 +1,7 @@
 public class LineReader extends Thread{
-    private MyMonitorBuffer monitor;
+    private MonitorBufferTask monitor;
 
-    public LineReader(MyMonitorBuffer monitor) {
+    public LineReader(MonitorBufferTask monitor) {
         this.monitor = monitor;
     }
 
