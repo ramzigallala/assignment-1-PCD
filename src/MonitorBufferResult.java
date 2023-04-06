@@ -9,7 +9,7 @@ public class MonitorBufferResult {
     public MonitorBufferResult() {
         flagFirst = true;
         listProcessed = new TreeSet<>((o1, o2) -> {
-            if (o1.getLineFile() < o2.getLineFile()) return 1;
+            if (o1.getLineFile() > o2.getLineFile()) return 1;
             return -1;
         });
     }
