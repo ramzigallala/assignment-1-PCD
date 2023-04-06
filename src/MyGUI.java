@@ -61,9 +61,9 @@ public class MyGUI extends JFrame {
     private void viewResultPanel() {
         JPanel panel = new JPanel(new GridLayout(1,2, 10,10));
         rank = new TextArea();
-        rank.setEnabled(false);
+        rank.setEditable(false);
         interval = new TextArea();
-        interval.setEnabled(false);
+        interval.setEditable(false);
         panel.add(rank);
         panel.add(interval);
         add(panel);

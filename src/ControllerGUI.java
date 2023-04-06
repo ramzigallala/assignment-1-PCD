@@ -1,5 +1,6 @@
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.TreeSet;
@@ -7,7 +8,6 @@ import java.util.TreeSet;
 public class ControllerGUI implements Runnable{
     private MyGUI myGUI;
     private MonitorBufferResult bagOfResults;
-    private boolean flagAvailable;
     private int last = 5;
     private MyLatch phaser;
 
@@ -25,6 +25,22 @@ public class ControllerGUI implements Runnable{
     public void run() {
         while(phaser.getNWorkersOnline()>1){
             updateRank();
+            updateInterval();
+            System.out.println("ciao");
+        }
+        phaser.releaseThread();
+
+    }
+
+    private void updateInterval() {
+        String text = "";
+        try {
+            for (Long entry: bagOfResults.getlistNumberInInterval()) {
+                text = text + entry + "\n";
+            }
+            myGUI.getInterval().setText(text);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
     }
