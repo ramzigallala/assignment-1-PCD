@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -21,7 +22,36 @@ public class Main {
             throw new RuntimeException(e);
         }
 
+        int maxLine= 100;
+        int interval = 4;
         
+        
+        
+        int range = maxLine/interval;
+        List<Long> listNumberInInterval = new ArrayList<>();
+        for (int i=0;i<=interval;i++)listNumberInInterval.add(0L);
+        try {
+            for (Pair<String,Long> entry: monitorResult.getListProcessed()) {
+                int min=0;
+                int max =0;
+                for(int i=0; i<interval; i++){
+                    max= (range+min)-1;
+                    if(entry.getLineFile()>=min && entry.getLineFile()<max) listNumberInInterval.set(i, listNumberInInterval.get(i)+1);
+
+                    if(entry.getLineFile()>=maxLine) {
+                        listNumberInInterval.set(interval,listNumberInInterval.get(interval)+1);
+                        i = interval;
+                    }
+
+                    min = max+1;
+                }
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        for (Long entry: listNumberInInterval) {
+            System.out.println(entry);
+        }
 
         //System.out.println("numdfSFFds: "+numThread);
         /*

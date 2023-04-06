@@ -12,7 +12,7 @@ public class Controller implements Runnable{
         this.bagOfResult = bagOfResult;
 
         bagOfTask = new MonitorBufferTask();
-        FileSeacher list = new FileSearcherImpl("D:\\Desktop\\prova", bagOfTask, phaser);
+        FileSeacher list = new FileSearcherImpl("D:\\Desktop\\PCD\\TestFolder2", bagOfTask, phaser);
         threadSearcher = new Thread(list);
         phaser.takeThread();
         threadSearcher.start();
