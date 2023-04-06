@@ -1,13 +1,15 @@
 import java.util.List;
+import java.util.Optional;
 
 public class Controller implements Runnable{
     private final MyLatch phaser;
     private final MonitorBufferResult bagOfResult;
     private final MonitorBufferTask bagOfTask;
-
     private final Thread threadSearcher;
+    private final Thread threadControllerGUI;
+    private ControllerGUI controllerGUI;
 
-    public Controller(MonitorBufferResult bagOfResult, MyLatch phaser) {
+    public Controller(MonitorBufferResult bagOfResult, MyLatch phaser, Optional<MyGUI> myGUI) {
         this.phaser = phaser;
         this.bagOfResult = bagOfResult;
 
@@ -16,9 +18,10 @@ public class Controller implements Runnable{
         threadSearcher = new Thread(list);
         phaser.takeThread();
         threadSearcher.start();
-
-
-
+        controllerGUI= new ControllerGUI(myGUI, bagOfResult, phaser);
+        threadControllerGUI = new Thread(controllerGUI);
+        phaser.takeThread();
+        threadControllerGUI.start();
     }
 
     @Override
@@ -26,11 +29,9 @@ public class Controller implements Runnable{
         while(threadSearcher.isAlive() || !bagOfTask.isEmpty()){
             addThread();
             //firstDPlaces();
+
         }
-
         phaser.releaseThread();
-
-
     }
 /*
     private void firstDPlaces() throws InterruptedException {
@@ -42,7 +43,6 @@ public class Controller implements Runnable{
 */
     private synchronized void addThread() {
         if(!bagOfTask.isEmpty()){
-
             if(threadAvailable()){
                 try {
                     new Thread(new FileProcessor(bagOfResult, bagOfTask.getFile(), phaser)).start();

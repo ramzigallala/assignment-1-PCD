@@ -1,18 +1,14 @@
 import java.util.*;
 
 public class MonitorBufferTask {
-
-
     private int count;
     private Collection<String> listF;
 
     public MonitorBufferTask() {
-
         listF = new HashSet<String>();
     }
 
     public synchronized void putFile(String path){
-
         count++;
         listF.add(path);
         notifyAll();
@@ -28,21 +24,14 @@ public class MonitorBufferTask {
         count--;
         notifyAll();
         return nameFile;
-
     }
-
-
-
     public synchronized Collection<String> getListF() throws InterruptedException {
         if(isEmpty()) wait();
         return listF;
-
     }
 
     public synchronized boolean isEmpty(){
         return count == 0;
     }
-
-
 
 }

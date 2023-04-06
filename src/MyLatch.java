@@ -6,12 +6,9 @@ public class MyLatch {
         this.nWorkers = nWorkers;
         this.nWorkersOnline = 0;
     }
-
     public synchronized void reset() {
         nWorkersOnline = 0;
     }
-
-
     public synchronized void join() {
         while (nWorkersOnline !=0) {
             try {
@@ -21,14 +18,12 @@ public class MyLatch {
             }
         }
     }
-
     public synchronized int getNWorkersOnline(){
         return this.nWorkersOnline;
     }
     public synchronized int getNWorkers(){
         return this.nWorkers;
     }
-
     public synchronized void takeThread() {
         nWorkersOnline++;
         notifyAll();

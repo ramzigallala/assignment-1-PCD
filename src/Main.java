@@ -1,14 +1,14 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Main {
 
     public static void main(String[] args) {
         int numThread = Runtime.getRuntime().availableProcessors() +1;
-        System.out.println("num: "+numThread);
         MyLatch phaser = new MyLatch(numThread);
         MonitorBufferResult monitorResult = new MonitorBufferResult();
-        Controller controller = new Controller(monitorResult,phaser);
+        Controller controller = new Controller(monitorResult,phaser, Optional.empty());
         Thread th2 = new Thread(controller);
         phaser.takeThread();
         th2.start();

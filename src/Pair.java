@@ -17,15 +17,4 @@ public class Pair<String, Double> {
         return this.lineFile;
     }
 
-    public Pair<String,Double> get() {
-        return new Pair<>(nameFile,lineFile);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        Pair<String, Double> obj;
-        obj = (Pair<String, Double>)o;
-        return nameFile.equals(obj.nameFile);
-    }
-
 }
