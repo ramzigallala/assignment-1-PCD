@@ -12,14 +12,14 @@ public class MonitorBufferResult {
     private ArrayList<Long> listNumberInInterval;
     private boolean flagFirst;
 
-    public MonitorBufferResult() {
+    public MonitorBufferResult(int maxL, int NL) {
         flagFirst = true;
         listProcessed = new TreeSet<>((o1, o2) -> {
-            if (o1.getLineFile() < o2.getLineFile()) return 1;
+            if (o1.getSecond() < o2.getSecond()) return 1;
             return -1;
         });
-        maxLine= 100;
-        interval = 4;
+        maxLine= maxL;
+        interval = NL;
         range = maxLine/interval;
         listNumberInInterval = new ArrayList<>();
 
@@ -30,8 +30,8 @@ public class MonitorBufferResult {
         flagFirst=false;
         listProcessed.add(obj);
         int index =0;
-        if(getIndex(obj.getLineFile()).isPresent()){
-            index = getIndex(obj.getLineFile()).get();
+        if(getIndex(obj.getSecond()).isPresent()){
+            index = getIndex(obj.getSecond()).get();
             listNumberInInterval.set(index, listNumberInInterval.get(index)+1);
         }
         notifyAll();
@@ -47,8 +47,8 @@ public class MonitorBufferResult {
 
 
     public synchronized Optional<List<String>> getNameSubList(int i) {
-        if(listProcessed.size()>=5){
-            return Optional.of(listProcessed.stream().map(Pair::getNameFile).toList().subList(0,i));
+        if(listProcessed.size()>=i){
+            return Optional.of(listProcessed.stream().map(Pair::getFirst).toList().subList(0,i));
         }
         return Optional.empty();
     }

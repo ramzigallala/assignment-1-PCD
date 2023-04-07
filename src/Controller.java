@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
@@ -6,21 +7,32 @@ public class Controller implements Runnable{
     private final MonitorBufferResult bagOfResult;
     private final MonitorBufferTask bagOfTask;
     private final Thread threadSearcher;
-    private final Thread threadControllerGUI;
-    private ControllerGUI controllerGUI;
 
-    public Controller(MonitorBufferResult bagOfResult, MyLatch phaser, Optional<MyGUI> myGUI) {
+
+    public Controller(MonitorBufferResult bagOfResult, MyLatch phaser, String D) throws InterruptedException {
         this.phaser = phaser;
         this.bagOfResult = bagOfResult;
 
         bagOfTask = new MonitorBufferTask();
-        FileSeacher list = new FileSearcherImpl("D:\\Desktop\\PCD\\TestFolder2", bagOfTask, phaser);
+        FileSeacher list = new FileSearcherImpl(D, bagOfTask, phaser);
         threadSearcher = new Thread(list);
-        phaser.takeThread();
+        phaser.takeThread(threadSearcher);
         threadSearcher.start();
-        controllerGUI= new ControllerGUI(myGUI, bagOfResult, phaser);
-        threadControllerGUI = new Thread(controllerGUI);
-        phaser.takeThread();
+    }
+    public Controller(MonitorBufferResult bagOfResult, MyLatch phaser, Optional<MyGUI> myGUI, String D, int N) throws InterruptedException {
+        this.phaser = phaser;
+        this.bagOfResult = bagOfResult;
+
+        bagOfTask = new MonitorBufferTask();
+        FileSeacher list = new FileSearcherImpl(D, bagOfTask, phaser);
+        threadSearcher = new Thread(list);
+        int indexS = phaser.takeThread(threadSearcher);
+        list.setIndexThread(indexS);
+        threadSearcher.start();
+        ControllerGUI controllerGUI= new ControllerGUI(myGUI, bagOfResult, phaser, N);
+        Thread threadControllerGUI = new Thread(controllerGUI);
+        int indexC = phaser.takeThread(threadControllerGUI);
+        controllerGUI.setIndexThread(indexC);
         threadControllerGUI.start();
     }
 
@@ -28,29 +40,23 @@ public class Controller implements Runnable{
     public void run() {
         while(threadSearcher.isAlive() || !bagOfTask.isEmpty()){
             addThread();
-            //firstDPlaces();
-
         }
-        phaser.releaseThread();
+        phaser.releaseThread(0);
     }
-/*
-    private void firstDPlaces() throws InterruptedException {
-        if(phaser.getNWorkersOnline()==1){
-            final List<Pair<String,Long>> list = bagOfResult.getListProcessed().stream().toList();
-            for(int i = 0; i<5; i++) System.out.println(list.get(i).getNameFile()+" "+ list.get(i).getLineFile());
-        }
-    }
-*/
     private synchronized void addThread() {
         if(!bagOfTask.isEmpty()){
-            if(threadAvailable()){
+            //if(threadAvailable()){
                 try {
-                    new Thread(new FileProcessor(bagOfResult, bagOfTask.getFile(), phaser)).start();
+                    FileProcessor fileProcessor = new FileProcessor(bagOfResult, bagOfTask.getFile(), phaser);
+                    Thread th = new Thread(fileProcessor);
+                    int index = phaser.takeThread(th);
+                    fileProcessor.setIndexThread(index);
+                    th.start();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                phaser.takeThread();
-            }
+
+            //}
         }
     }
     public synchronized boolean threadAvailable() {

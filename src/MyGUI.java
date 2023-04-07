@@ -11,17 +11,25 @@ public class MyGUI extends JFrame {
     private Button stop;
     private TextArea rank;
     private TextArea interval;
+    private TextField maxL, NL, D, numRank;
+    private MyLatch phaser;
 
     public MyGUI () {
+        phaser = new MyLatch(NUM_THREAD);
         setTitle("Assigment 1");
         setSize(500, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
+        maxL = new TextField();
+        NL = new TextField();
+        D = new TextField("D:\\Desktop\\PCD\\TestFolder2");
+        numRank = new TextField();
         inputPanel("maxL");
         inputPanel("NL");
         inputPanel("D");
+        inputPanel("numRank");
         startStopPanel();
         viewResultPanel();
 
@@ -31,9 +39,13 @@ public class MyGUI extends JFrame {
     private void inputPanel(String name){
         JPanel panel = new JPanel(new GridLayout(0,4));
         Label label = new Label(name);
-        TextField textField = new TextField();
         panel.add(label);
-        panel.add(textField);
+        switch (name) {
+            case "maxL" -> panel.add(maxL);
+            case "NL" -> panel.add(NL);
+            case "D" -> panel.add(D);
+            case "numRank" -> panel.add(numRank);
+        }
         add(panel);
     }
     private void startStopPanel(){
@@ -41,20 +53,36 @@ public class MyGUI extends JFrame {
         start = new Button("start");
         start.addActionListener(startListener());
         stop = new Button("stop");
+        stop.addActionListener(stopListener());
+        stop.setEnabled(false);
         panel.add(start);
         panel.add(stop);
         add(panel);
     }
 
+    private ActionListener stopListener() {
+        return e -> {
+            phaser.stopThread();
+            start.setEnabled(true);
+            stop.setEnabled(false);
+        };
+    }
+
     private ActionListener startListener() {
         return e -> {
-            MyLatch phaser = new MyLatch(NUM_THREAD);
-            MonitorBufferResult monitorResult = new MonitorBufferResult();
-            Controller controller = new Controller(monitorResult,phaser, Optional.of(this));
-            Thread th = new Thread(controller);
-            phaser.takeThread();
-            th.start();
-            stop.setEnabled(false);
+
+            try {
+                phaser.reset();
+                MonitorBufferResult monitorResult = new MonitorBufferResult(Integer.parseInt(maxL.getText()), Integer.parseInt(NL.getText()));
+                Controller controller = new Controller(monitorResult,phaser, Optional.of(this), D.getText(), Integer.parseInt(numRank.getText()));
+                Thread th = new Thread(controller);
+                phaser.takeThread(th);
+                th.start();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+            start.setEnabled(false);
+            stop.setEnabled(true);
         };
     }
 
@@ -75,5 +103,9 @@ public class MyGUI extends JFrame {
 
     public TextArea getInterval() {
         return this.interval;
+    }
+
+    public Button getStart() {
+        return this.start;
     }
 }

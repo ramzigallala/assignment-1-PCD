@@ -1,23 +1,28 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class Main {
 
     public static void main(String[] args) {
         int numThread = Runtime.getRuntime().availableProcessors() +1;
         MyLatch phaser = new MyLatch(numThread);
-        MonitorBufferResult monitorResult = new MonitorBufferResult();
-        Controller controller = new Controller(monitorResult,phaser, Optional.empty());
-        Thread th2 = new Thread(controller);
-        phaser.takeThread();
-        th2.start();
+        MonitorBufferResult monitorResult = new MonitorBufferResult(100, 4);
+
+        try {
+            Controller controller = new Controller(monitorResult,phaser, "D:\\Desktop\\PCD\\TestFolder2");
+            Thread th2 = new Thread(controller);
+            phaser.takeThread(th2);
+            th2.start();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         phaser.join();
 
         final List<Pair<String,Long>> list;
         try {
             list = monitorResult.getListProcessed().stream().toList();
-            for(int i = 0; i<5; i++) System.out.println(list.get(i).getNameFile()+" "+ list.get(i).getLineFile());
+            for(int i = 0; i<5; i++) System.out.println(list.get(i).getFirst()+" "+ list.get(i).getSecond());
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -37,11 +42,11 @@ public class Main {
                 int max =0;
                 for(int i=0; i<interval; i++){
                     max= (range+min);
-                    if(entry.getLineFile()>=min && entry.getLineFile()<max) {
+                    if(entry.getSecond()>=min && entry.getSecond()<max) {
                         listNumberInInterval.set(i, listNumberInInterval.get(i)+1);
                         i=interval;
                         flag = false;
-                    } else if(entry.getLineFile()>=maxLine) {
+                    } else if(entry.getSecond()>=maxLine) {
                         listNumberInInterval.set(interval,listNumberInInterval.get(interval)+1);
                         i = interval;
                         flag = false;
@@ -51,7 +56,7 @@ public class Main {
 
                 if(flag){
 
-                    System.out.println(entry.getLineFile());
+                    System.out.println(entry.getSecond());
                     flag = true;
                 }
             }

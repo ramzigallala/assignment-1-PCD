@@ -11,6 +11,7 @@ public class FileProcessor implements Runnable{
     private final Path nameFile;
 
     private final MyLatch phaser;
+    private int indexThread;
 
     public FileProcessor(MonitorBufferResult bagOfResult, String nameFile, MyLatch phaser) {
         this.bagOfResult = bagOfResult;
@@ -27,11 +28,15 @@ public class FileProcessor implements Runnable{
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
-        phaser.releaseThread();
+        phaser.releaseThread(indexThread);
 
 
     }
     private Long getNumLines() throws IOException {
         return Files.lines(nameFile).count();
+    }
+
+    public void setIndexThread(int indexThread){
+        this.indexThread=indexThread;
     }
 }

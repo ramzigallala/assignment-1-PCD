@@ -10,13 +10,19 @@ public class ControllerGUI implements Runnable{
     private MonitorBufferResult bagOfResults;
     private int last = 5;
     private MyLatch phaser;
+    private int numRank;
+    private int indexThread;
 
-    public ControllerGUI(Optional<MyGUI> myGUI, MonitorBufferResult bagOfResults, MyLatch phaser) {
+
+
+    public ControllerGUI(Optional<MyGUI> myGUI, MonitorBufferResult bagOfResults, MyLatch phaser, int N) {
         if(myGUI.isPresent()){
             this.myGUI = myGUI.get();
             this.bagOfResults = bagOfResults;
             this.phaser = phaser;
+            this.numRank=N;
         }
+        this.indexThread=indexThread;
 
 
     }
@@ -26,9 +32,10 @@ public class ControllerGUI implements Runnable{
         while(phaser.getNWorkersOnline()>1){
             updateRank();
             updateInterval();
-            System.out.println("ciao");
         }
-        phaser.releaseThread();
+        updateInterval();
+        phaser.releaseThread(indexThread);
+        myGUI.getStart().setEnabled(true);
 
     }
 
@@ -46,8 +53,8 @@ public class ControllerGUI implements Runnable{
     }
 
     private void updateRank(){
-        if(bagOfResults.getNameSubList(5).isPresent()){
-            List<String> list = bagOfResults.getNameSubList(5).get();
+        if(bagOfResults.getNameSubList(numRank).isPresent()){
+            List<String> list = bagOfResults.getNameSubList(numRank).get();
             String mom = "";
             for (String entry: list) {
                 File file= new File(entry);
@@ -55,5 +62,9 @@ public class ControllerGUI implements Runnable{
             }
             myGUI.getRank().setText(mom);
         }
+    }
+
+    public void setIndexThread(int indexThread) {
+        this.indexThread = indexThread;
     }
 }

@@ -6,6 +6,8 @@ public class FileSearcherImpl implements FileSeacher{
 
     private MonitorBufferTask monitor;
     private MyLatch phaser;
+    private int indexThread;
+
     public FileSearcherImpl(String folder, MonitorBufferTask monitor, MyLatch phaser) {
         this.folder = new File(folder);
         this.monitor = monitor;
@@ -15,7 +17,7 @@ public class FileSearcherImpl implements FileSeacher{
 
     public void run(){
         listFiles(this.folder);
-        phaser.releaseThread();
+        phaser.releaseThread(indexThread);
     }
 
     private void listFiles(final File folder){
@@ -31,6 +33,8 @@ public class FileSearcherImpl implements FileSeacher{
     private boolean isFileJava(String path){
         return path.toLowerCase().endsWith(".java");
     }
-
+    public void setIndexThread(int indexThread) {
+        this.indexThread = indexThread;
+    }
 
 }

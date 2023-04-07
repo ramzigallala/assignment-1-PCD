@@ -1,20 +1,18 @@
-import java.util.Objects;
+public class Pair<A, B> {
+    private A first;
+    private B second;
 
-public class Pair<String, Double> {
-    private String nameFile;
-    private Double lineFile;
-
-    public Pair(String nameFile, Double lineFile) {
-        this.nameFile = nameFile;
-        this.lineFile = lineFile;
+    public Pair(A first, B second) {
+        this.first = first;
+        this.second = second;
     }
 
-    public String getNameFile() {
-        return this.nameFile;
+    public A getFirst() {
+        return this.first;
     }
 
-    public Double getLineFile() {
-        return this.lineFile;
+    public B getSecond() {
+        return this.second;
     }
 
 }
