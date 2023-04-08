@@ -6,7 +6,7 @@ public class Main {
 
     public static final String FOLDER = "D:\\Desktop\\PCD\\TestFolder2";
     //public static final int NUM_THREAD = Runtime.getRuntime().availableProcessors() + 1;
-    public static final int NUM_THREAD = 5;
+    public static final int NUM_THREAD = 9;
 
     public static void main(String[] args) {
         int maxLine;
@@ -23,7 +23,7 @@ public class Main {
         System.out.print("Rank: ");
         rank = scanner.nextInt();
         System.out.println();
-
+        Chrono chrono = new Chrono();
 
 
 
@@ -34,12 +34,14 @@ public class Main {
             Controller controller = new Controller(monitorResult,phaser, FOLDER);
             Thread th2 = new Thread(controller);
             phaser.takeThread(th2);
+            chrono.start();
             th2.start();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
         phaser.join();
+        chrono.stop();
 
         final List<Pair<String,Long>> list;
         try {
@@ -77,6 +79,7 @@ public class Main {
             total = total + entry.intValue();
         }
         System.out.println("total: "+total);
+        System.out.println("time: " + chrono.getTime());
 
 
 
