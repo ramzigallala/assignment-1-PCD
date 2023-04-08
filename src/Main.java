@@ -1,15 +1,37 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
 
+    public static final String FOLDER = "D:\\Desktop\\PCD\\TestFolder2";
+    //public static final int NUM_THREAD = Runtime.getRuntime().availableProcessors() + 1;
+    public static final int NUM_THREAD = 5;
+
     public static void main(String[] args) {
-        int numThread = Runtime.getRuntime().availableProcessors() +1;
-        MyLatch phaser = new MyLatch(numThread);
-        MonitorBufferResult monitorResult = new MonitorBufferResult(100, 4);
+        int maxLine;
+        int interval;
+        int rank;
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("MAXL: ");
+        maxLine = scanner.nextInt();
+        System.out.println();
+        System.out.print("Interval: ");
+        interval = scanner.nextInt();
+        System.out.println();
+        System.out.print("Rank: ");
+        rank = scanner.nextInt();
+        System.out.println();
+
+
+
+
+        MyLatch phaser = new MyLatch(NUM_THREAD);
+        MonitorBufferResult monitorResult = new MonitorBufferResult(maxLine, interval);
 
         try {
-            Controller controller = new Controller(monitorResult,phaser, "D:\\Desktop\\PCD\\TestFolder2");
+            Controller controller = new Controller(monitorResult,phaser, FOLDER);
             Thread th2 = new Thread(controller);
             phaser.takeThread(th2);
             th2.start();
@@ -22,19 +44,13 @@ public class Main {
         final List<Pair<String,Long>> list;
         try {
             list = monitorResult.getListProcessed().stream().toList();
-            for(int i = 0; i<5; i++) System.out.println(list.get(i).getFirst()+" "+ list.get(i).getSecond());
+            for(int i = 0; i< rank; i++) System.out.println(list.get(i).getFirst()+" "+ list.get(i).getSecond());
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-        int maxLine= 100;
-        int interval = 4;
-        
-        
-        
         int range = maxLine/interval;
         List<Long> listNumberInInterval = new ArrayList<>();
-        boolean flag = true;
         for (int i=0;i<=interval;i++)listNumberInInterval.add(0L);
         try {
             for (Pair<String,Long> entry: monitorResult.getListProcessed()) {
@@ -45,19 +61,11 @@ public class Main {
                     if(entry.getSecond()>=min && entry.getSecond()<max) {
                         listNumberInInterval.set(i, listNumberInInterval.get(i)+1);
                         i=interval;
-                        flag = false;
                     } else if(entry.getSecond()>=maxLine) {
                         listNumberInInterval.set(interval,listNumberInInterval.get(interval)+1);
                         i = interval;
-                        flag = false;
                     }
                     min = max;
-                }
-
-                if(flag){
-
-                    System.out.println(entry.getSecond());
-                    flag = true;
                 }
             }
         } catch (InterruptedException e) {
@@ -69,23 +77,7 @@ public class Main {
             total = total + entry.intValue();
         }
         System.out.println("total: "+total);
-        try {
-            System.out.println(monitorResult.getListProcessed().size());
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
 
-
-        //System.out.println("numdfSFFds: "+numThread);
-        /*
-        try {
-            for (Pair<String, Long> entry: monitorResult.getListProcessed()) {
-                System.out.println(entry.getNameFile()+ " "+ entry.getLineFile());
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-*/
 
 
     }

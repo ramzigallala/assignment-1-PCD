@@ -35,23 +35,20 @@ public class MyLatch {
     public synchronized int getNWorkers(){
         return this.nWorkers;
     }
-    public synchronized int takeThread(Thread thread) throws InterruptedException {
-        if(!(nWorkersOnline<(nWorkers-1))){
+    public synchronized Optional<Integer> takeThread(Thread thread) throws InterruptedException {
+        if(nWorkersOnline>=nWorkers){
             wait();
         }
-        nWorkersOnline++;
-        int index = getIndexEmpty().get();
-        listThread.set(index, Optional.of(thread));
-        notifyAll();
-        return index;
-
-        /*
-        try {
-            throw new Exception("No index for thread");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        Optional<Integer> index = getIndexEmpty();
+        if (index.isPresent()){
+            nWorkersOnline++;
+            listThread.set(index.get(), Optional.of(thread));
+            //System.out.println("preso "+index);
+            notifyAll();
+            return index;
         }
-*/
+        return Optional.empty();
+
     }
 
     private synchronized Optional<Integer> getIndexEmpty() {
@@ -70,8 +67,11 @@ public class MyLatch {
     }
 
     public synchronized void stopThread() {
+        listThread.get(2).get().interrupt();
         for (Optional<Thread> entry : listThread) {
-            entry.ifPresent(Thread::interrupt);
+            //entry.ifPresent(Thread::interrupt);
+            if(!entry.isEmpty())
+                entry.get().interrupt();
         }
         reset();
     }

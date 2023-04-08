@@ -25,8 +25,8 @@ public class FileProcessor implements Runnable{
 
         try {
             bagOfResult.putProcessed(new Pair<>(nameFile.toString(), getNumLines()));
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+        } catch (IOException | InterruptedException ignored) {
+
         }
         phaser.releaseThread(indexThread);
 

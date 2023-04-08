@@ -1,8 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.EventListener;
 import java.util.Optional;
 
 public class MyGUI extends JFrame {
@@ -73,13 +71,15 @@ public class MyGUI extends JFrame {
 
             try {
                 phaser.reset();
+                //System.out.println(phaser.getNWorkersOnline());
                 MonitorBufferResult monitorResult = new MonitorBufferResult(Integer.parseInt(maxL.getText()), Integer.parseInt(NL.getText()));
                 Controller controller = new Controller(monitorResult,phaser, Optional.of(this), D.getText(), Integer.parseInt(numRank.getText()));
-                Thread th = new Thread(controller);
-                phaser.takeThread(th);
+                Thread th = new Thread(controller, "controller");
+                int index = phaser.takeThread(th).get();
+                controller.setIndexThread(index);
                 th.start();
             } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
+
             }
             start.setEnabled(false);
             stop.setEnabled(true);
