@@ -1,8 +1,10 @@
+import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
-public class Main {
+public class MainConsole {
 
     public static final String FOLDER = "D:\\Desktop\\PCD\\TestFolder2";
     //public static final int NUM_THREAD = Runtime.getRuntime().availableProcessors() + 1;
@@ -33,9 +35,13 @@ public class Main {
         try {
             Controller controller = new Controller(monitorResult,phaser, FOLDER);
             Thread th2 = new Thread(controller);
-            phaser.takeThread(th2);
-            chrono.start();
-            th2.start();
+            Optional<Integer> index = phaser.takeThread(th2);
+            if(index.isPresent()){
+                controller.setIndexThread(index.get());
+                chrono.start();
+                th2.start();
+            }
+
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

@@ -36,10 +36,11 @@ public class MyLatch {
         return this.nWorkers;
     }
     public synchronized Optional<Integer> takeThread(Thread thread) throws InterruptedException {
-        if(nWorkersOnline>=nWorkers){
+        while(nWorkersOnline>=nWorkers){
             wait();
         }
         Optional<Integer> index = getIndexEmpty();
+        //it is inserted for manage expetion when interrupt threads
         if (index.isPresent()){
             nWorkersOnline++;
             listThread.set(index.get(), Optional.of(thread));

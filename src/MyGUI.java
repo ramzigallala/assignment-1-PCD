@@ -71,13 +71,15 @@ public class MyGUI extends JFrame {
 
             try {
                 phaser.reset();
-                //System.out.println(phaser.getNWorkersOnline());
                 MonitorBufferResult monitorResult = new MonitorBufferResult(Integer.parseInt(maxL.getText()), Integer.parseInt(NL.getText()));
                 Controller controller = new Controller(monitorResult,phaser, Optional.of(this), D.getText(), Integer.parseInt(numRank.getText()));
-                Thread th = new Thread(controller, "controller");
-                int index = phaser.takeThread(th).get();
-                controller.setIndexThread(index);
-                th.start();
+                Thread th = new Thread(controller);
+                Optional<Integer> index = phaser.takeThread(th);
+                if(index.isPresent()){
+                    controller.setIndexThread(index.get());
+                    th.start();
+                }
+
             } catch (InterruptedException ex) {
 
             }

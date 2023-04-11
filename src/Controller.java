@@ -15,8 +15,12 @@ public class Controller implements Runnable{
         bagOfTask = new MonitorBufferTask();
         FileSeacher list = new FileSearcherImpl(D, bagOfTask, phaser);
         threadSearcher = new Thread(list);
-        phaser.takeThread(threadSearcher);
-        threadSearcher.start();
+        Optional<Integer> indexS = phaser.takeThread(threadSearcher);
+        if (indexS.isPresent()){
+            list.setIndexThread(indexS.get());
+            threadSearcher.start();
+        }
+
     }
     public Controller(MonitorBufferResult bagOfResult, MyLatch phaser, Optional<MyGUI> myGUI, String D, int N) throws InterruptedException {
         this.phaser = phaser;
@@ -25,14 +29,19 @@ public class Controller implements Runnable{
         bagOfTask = new MonitorBufferTask();
         FileSeacher list = new FileSearcherImpl(D, bagOfTask, phaser);
         threadSearcher = new Thread(list);
-        int indexS = phaser.takeThread(threadSearcher).get();
-        list.setIndexThread(indexS);
-        threadSearcher.start();
+        Optional<Integer> indexS = phaser.takeThread(threadSearcher);
+        if (indexS.isPresent()){
+            list.setIndexThread(indexS.get());
+            threadSearcher.start();
+        }
         ControllerGUI controllerGUI= new ControllerGUI(myGUI, bagOfResult, phaser, N);
         Thread threadControllerGUI = new Thread(controllerGUI);
-        int indexC = phaser.takeThread(threadControllerGUI).get();
-        controllerGUI.setIndexThread(indexC);
-        threadControllerGUI.start();
+        Optional<Integer> indexC = phaser.takeThread(threadControllerGUI);
+        if(indexC.isPresent()){
+            controllerGUI.setIndexThread(indexC.get());
+            threadControllerGUI.start();
+        }
+
     }
 
     @Override
@@ -44,26 +53,22 @@ public class Controller implements Runnable{
     }
     private synchronized void addThread() {
         if(!bagOfTask.isEmpty()){
-            //if(threadAvailable()){
                 try {
-
                     FileProcessor fileProcessor = new FileProcessor(bagOfResult, bagOfTask.getFile(), phaser);
                     Thread th = new Thread(fileProcessor);
                     Optional<Integer> index = phaser.takeThread(th);
-                    if(index.isPresent()){
+                    if (index.isPresent()){
                         fileProcessor.setIndexThread(index.get());
                         th.start();
                     }
+
+
 
                 } catch (InterruptedException e) {
 
                 }
 
-            //}
         }
-    }
-    public synchronized boolean threadAvailable() {
-        return phaser.getNWorkersOnline()<(phaser.getNWorkers()-1);
     }
 
     public void setIndexThread(int indexThread) {
