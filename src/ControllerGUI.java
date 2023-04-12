@@ -8,23 +8,15 @@ import java.util.TreeSet;
 public class ControllerGUI implements Runnable{
     private MyGUI myGUI;
     private MonitorBufferResult bagOfResults;
-    private int last = 5;
     private MyLatch phaser;
     private int numRank;
     private int indexThread;
 
-
-
-    public ControllerGUI(Optional<MyGUI> myGUI, MonitorBufferResult bagOfResults, MyLatch phaser, int N) {
-        if(myGUI.isPresent()){
-            this.myGUI = myGUI.get();
-            this.bagOfResults = bagOfResults;
-            this.phaser = phaser;
-            this.numRank=N;
-        }
-        this.indexThread=indexThread;
-
-
+    public ControllerGUI(MyGUI myGUI, MonitorBufferResult bagOfResults, MyLatch phaser, int N) {
+        this.myGUI = myGUI;
+        this.bagOfResults = bagOfResults;
+        this.phaser = phaser;
+        this.numRank = N;
     }
 
     @Override
@@ -36,7 +28,6 @@ public class ControllerGUI implements Runnable{
         updateInterval();
         phaser.releaseThread(indexThread);
         myGUI.getStart().setEnabled(true);
-
     }
 
     private void updateInterval() {

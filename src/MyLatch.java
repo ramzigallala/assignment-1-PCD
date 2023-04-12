@@ -3,12 +3,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class MyLatch {
-    private int nWorkers;
+    private final int nWorkers;
     private int nWorkersOnline;
-
-    private List<Optional<Thread>> listThread;
-
-
+    private final List<Optional<Thread>> listThread;
     public MyLatch(int nWorkers) {
         this.nWorkers = nWorkers;
         this.nWorkersOnline = 0;
@@ -32,9 +29,6 @@ public class MyLatch {
     public synchronized int getNWorkersOnline(){
         return this.nWorkersOnline;
     }
-    public synchronized int getNWorkers(){
-        return this.nWorkers;
-    }
     public synchronized Optional<Integer> takeThread(Thread thread) throws InterruptedException {
         while(nWorkersOnline>=nWorkers){
             wait();
@@ -51,7 +45,6 @@ public class MyLatch {
         return Optional.empty();
 
     }
-
     private synchronized Optional<Integer> getIndexEmpty() {
         for (Optional<Thread> entry: listThread) {
             if(entry.isEmpty()){
@@ -60,19 +53,14 @@ public class MyLatch {
         }
         return Optional.empty();
     }
-
     public synchronized void releaseThread(int index) {
         nWorkersOnline--;
         listThread.set(index,Optional.empty());
         notifyAll();
     }
-
     public synchronized void stopThread() {
-        listThread.get(2).get().interrupt();
         for (Optional<Thread> entry : listThread) {
-            //entry.ifPresent(Thread::interrupt);
-            if(!entry.isEmpty())
-                entry.get().interrupt();
+            entry.ifPresent(Thread::interrupt);
         }
         reset();
     }
