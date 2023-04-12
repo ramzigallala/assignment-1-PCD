@@ -1,14 +1,13 @@
 import java.io.File;
-import java.util.concurrent.Phaser;
 
-public class FileSearcherImpl implements FileSeacher{
+public class FileSearcher implements Runnable{
     private final File folder;
 
     private MonitorBufferTask monitor;
     private MyLatch phaser;
     private int indexThread;
 
-    public FileSearcherImpl(String folder, MonitorBufferTask monitor, MyLatch phaser) {
+    public FileSearcher(String folder, MonitorBufferTask monitor, MyLatch phaser) {
         this.folder = new File(folder);
         this.monitor = monitor;
         this.phaser = phaser;

@@ -7,8 +7,7 @@ import java.util.Scanner;
 public class MainConsole {
 
     public static final String FOLDER = "D:\\Desktop\\PCD\\TestFolder2";
-    //public static final int NUM_THREAD = Runtime.getRuntime().availableProcessors() + 1;
-    public static final int NUM_THREAD = 9;
+    public static final int NUM_THREAD = Runtime.getRuntime().availableProcessors() + 1;
 
     public static void main(String[] args) {
         int maxLine;

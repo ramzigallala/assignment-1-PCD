@@ -12,7 +12,7 @@ public class Controller implements Runnable{
         this.bagOfResult = bagOfResult;
 
         bagOfTask = new MonitorBufferTask();
-        FileSeacher list = new FileSearcherImpl(D, bagOfTask, phaser);
+        FileSearcher list = new FileSearcher(D, bagOfTask, phaser);
         threadSearcher = new Thread(list);
         Optional<Integer> indexS = phaser.takeThread(threadSearcher);
         if (indexS.isPresent()){
@@ -26,7 +26,7 @@ public class Controller implements Runnable{
         this.bagOfResult = bagOfResult;
 
         bagOfTask = new MonitorBufferTask();
-        FileSeacher list = new FileSearcherImpl(D, bagOfTask, phaser);
+        FileSearcher list = new FileSearcher(D, bagOfTask, phaser);
         threadSearcher = new Thread(list);
         Optional<Integer> indexS = phaser.takeThread(threadSearcher);
         if (indexS.isPresent()){
