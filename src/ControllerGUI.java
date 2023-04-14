@@ -1,39 +1,36 @@
 import java.io.File;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
 
 public class ControllerGUI implements Runnable{
     private MyGUI myGUI;
     private MonitorBufferResult bagOfResults;
-    private MyLatch phaser;
+    private CountDownLatch latch;
     private int numRank;
-    private int indexThread;
 
-    public ControllerGUI(MyGUI myGUI, MonitorBufferResult bagOfResults, MyLatch phaser, int N) {
+
+    public ControllerGUI(MyGUI myGUI, MonitorBufferResult bagOfResults, CountDownLatch latch, int N) {
         this.myGUI = myGUI;
         this.bagOfResults = bagOfResults;
-        this.phaser = phaser;
+        this.latch = latch;
         this.numRank = N;
     }
 
     @Override
     public void run() {
-        while(phaser.getNWorkersOnline()>1){
+        while(latch.getCount()>1 ){
             updateRank();
             updateInterval();
         }
         updateInterval();
-        phaser.releaseThread(indexThread);
+        latch.countDown();
         myGUI.getStart().setEnabled(true);
     }
 
     private void updateInterval() {
         String text = "";
         try {
-            for (Long entry: bagOfResults.getlistNumberInInterval()) {
+            for (Long entry: bagOfResults.getListNumberInInterval()) {
                 text = text + entry + "\n";
             }
             myGUI.getInterval().setText(text);
@@ -49,13 +46,10 @@ public class ControllerGUI implements Runnable{
             String mom = "";
             for (String entry: list) {
                 File file= new File(entry);
-                mom = mom + file.getName() + "\n";
+                mom = mom + file.getAbsolutePath() + "\n";
             }
             myGUI.getRank().setText(mom);
         }
     }
 
-    public void setIndexThread(int indexThread) {
-        this.indexThread = indexThread;
-    }
 }

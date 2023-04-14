@@ -1,10 +1,11 @@
 import java.util.*;
 
 public class MonitorBufferTask {
-    private Collection<String> listF;
+    private List<String> listF;
+    private boolean searcher= false;
 
     public MonitorBufferTask() {
-        listF = new HashSet<String>();
+        listF = new LinkedList<>();
     }
 
     public synchronized void putFile(String path){
@@ -12,18 +13,31 @@ public class MonitorBufferTask {
         notifyAll();
     }
 
-    public synchronized String getFile() throws InterruptedException {
-        while(isEmpty()){
+    public synchronized Optional<String> getFile() throws InterruptedException {
+        while(listF.isEmpty() && searcher){
             wait();
         }
 
-        String nameFile = listF.iterator().next();
-        listF.remove(nameFile);
+        if(!listF.isEmpty()){
+            String nameFile = listF.get(0);
+            listF.remove(0);
+            notifyAll();
+            return Optional.of(nameFile);
+        }
         notifyAll();
-        return nameFile;
+        return Optional.empty();
     }
-    public synchronized boolean isEmpty(){
-        return listF.isEmpty();
+    public synchronized boolean isAvailable(){
+        notifyAll();
+        return searcher || !listF.isEmpty();
+    }
+    public synchronized void runningSearcher(){
+        notifyAll();
+        searcher=true;
+    }
+    public synchronized void stopSearcher(){
+        notifyAll();
+        searcher=false;
     }
 
 }

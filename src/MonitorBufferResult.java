@@ -26,7 +26,7 @@ public class MonitorBufferResult {
         for (int i=0;i<=interval;i++)listNumberInInterval.add(0L);
     }
 
-    public synchronized void putProcessed (Pair<String, Long> obj) throws InterruptedException{
+    public synchronized void putProcessed (Pair<String, Long> obj){
         flagFirst=false;
         listProcessed.add(obj);
         int index =0;
@@ -69,7 +69,7 @@ public class MonitorBufferResult {
 
     }
 
-    public synchronized List<Long> getlistNumberInInterval() throws InterruptedException {
+    public synchronized List<Long> getListNumberInInterval() throws InterruptedException {
         while (flagFirst){
             wait();
         }

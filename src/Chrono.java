@@ -1,8 +1,6 @@
 public class Chrono {
-
     private boolean running;
     private long startTime;
-
     public Chrono(){
         running = false;
     }
@@ -11,12 +9,10 @@ public class Chrono {
         running = true;
         startTime = System.currentTimeMillis();
     }
-
     public void stop(){
         startTime = getTime();
         running = false;
     }
-
     public long getTime(){
         if (running){
             return 	System.currentTimeMillis() - startTime;

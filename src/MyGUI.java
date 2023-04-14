@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 
 public class MyGUI extends JFrame {
     public static final int NUM_THREAD = Runtime.getRuntime().availableProcessors() + 1;
@@ -10,10 +10,10 @@ public class MyGUI extends JFrame {
     private TextArea rank;
     private TextArea interval;
     private TextField maxL, NL, D, numRank;
-    private MyLatch phaser;
+    private CountDownLatch latch;
+    private Flag stopThread;
 
     public MyGUI () {
-        phaser = new MyLatch(NUM_THREAD);
         setTitle("Assigment 1");
         setSize(500, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -26,12 +26,12 @@ public class MyGUI extends JFrame {
         numRank = new TextField();
         inputPanel("maxL");
         inputPanel("NL");
-        inputPanel("D");
+        inputPanel("Directory");
         inputPanel("numRank");
         startStopPanel();
         viewResultPanel();
 
-        setVisible(true);         // "super" Frame shows
+        setVisible(true);
     }
 
     private void inputPanel(String name){
@@ -41,11 +41,12 @@ public class MyGUI extends JFrame {
         switch (name) {
             case "maxL" -> panel.add(maxL);
             case "NL" -> panel.add(NL);
-            case "D" -> panel.add(D);
+            case "Directory" -> panel.add(D);
             case "numRank" -> panel.add(numRank);
         }
         add(panel);
     }
+
     private void startStopPanel(){
         JPanel panel = new JPanel(new GridLayout(2,1, 20, 20));
         start = new Button("start");
@@ -58,30 +59,33 @@ public class MyGUI extends JFrame {
         add(panel);
     }
 
+
+
     private ActionListener stopListener() {
         return e -> {
-            phaser.stopThread();
+            stopThread.stopThread();
             start.setEnabled(true);
             stop.setEnabled(false);
         };
     }
 
+
+
     private ActionListener startListener() {
         return e -> {
-
             try {
-                phaser.reset();
+                stopThread = new Flag();
+                latch = new CountDownLatch(NUM_THREAD);
                 MonitorBufferResult monitorResult = new MonitorBufferResult(Integer.parseInt(maxL.getText()), Integer.parseInt(NL.getText()));
-                Controller controller = new Controller(monitorResult,phaser,this, D.getText(), Integer.parseInt(numRank.getText()));
-                Thread th = new Thread(controller);
-                Optional<Integer> index = phaser.takeThread(th);
-                if(index.isPresent()){
-                    controller.setIndexThread(index.get());
-                    th.start();
-                }
+                ControllerGUI controllerGUI = new ControllerGUI(this, monitorResult, latch, Integer.parseInt(numRank.getText()));
+                Thread threadControllerGUI = new Thread(controllerGUI);
+                threadControllerGUI.start();
+                Controller controller = new Controller(monitorResult,latch, D.getText(), stopThread);
+                Thread threadController = new Thread(controller);
+                threadController.start();
 
             } catch (InterruptedException ex) {
-
+                throw new RuntimeException(ex);
             }
             start.setEnabled(false);
             stop.setEnabled(true);

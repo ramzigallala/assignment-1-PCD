@@ -1,70 +1,49 @@
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 
 public class Controller implements Runnable{
-    private final MyLatch phaser;
+    private final CountDownLatch latch;
     private final MonitorBufferResult bagOfResult;
     private final MonitorBufferTask bagOfTask;
     private final Thread threadSearcher;
-    private int indexThread;
+    private long threadCount;
+    private Flag stopThread;
 
-    public Controller(MonitorBufferResult bagOfResult, MyLatch phaser, String D) throws InterruptedException {
-        this.phaser = phaser;
+    public Controller(MonitorBufferResult bagOfResult, CountDownLatch latch, String D) throws InterruptedException {
+        this.latch = latch;
         this.bagOfResult = bagOfResult;
-
         bagOfTask = new MonitorBufferTask();
-        FileSearcher list = new FileSearcher(D, bagOfTask, phaser);
+        this.stopThread = new Flag();
+        this.threadCount = latch.getCount()-2;//controller, searcher
+        FileSearcher list = new FileSearcher(D, bagOfTask, latch, stopThread);
         threadSearcher = new Thread(list);
-        Optional<Integer> indexS = phaser.takeThread(threadSearcher);
-        if (indexS.isPresent()){
-            list.setIndexThread(indexS.get());
-            threadSearcher.start();
-        }
+        bagOfTask.runningSearcher();
+        threadSearcher.start();
+
+
 
     }
-    public Controller(MonitorBufferResult bagOfResult, MyLatch phaser, MyGUI myGUI, String D, int N) throws InterruptedException {
-        this.phaser = phaser;
+    public Controller(MonitorBufferResult bagOfResult, CountDownLatch latch, String D, Flag stopThread) throws InterruptedException {
+        this.latch = latch;
         this.bagOfResult = bagOfResult;
-
         bagOfTask = new MonitorBufferTask();
-        FileSearcher list = new FileSearcher(D, bagOfTask, phaser);
+        this.stopThread = new Flag();
+        this.threadCount = latch.getCount()-3; //controller, searcher, controllerGUI
+        FileSearcher list = new FileSearcher(D, bagOfTask, latch, stopThread);
         threadSearcher = new Thread(list);
-        Optional<Integer> indexS = phaser.takeThread(threadSearcher);
-        if (indexS.isPresent()){
-            list.setIndexThread(indexS.get());
-            threadSearcher.start();
-        }
-        ControllerGUI controllerGUI= new ControllerGUI(myGUI, bagOfResult, phaser, N);
-        Thread threadControllerGUI = new Thread(controllerGUI);
-        Optional<Integer> indexC = phaser.takeThread(threadControllerGUI);
-        if(indexC.isPresent()){
-            controllerGUI.setIndexThread(indexC.get());
-            threadControllerGUI.start();
-        }
-
+        bagOfTask.runningSearcher();
+        threadSearcher.start();
+        this.stopThread = stopThread;
     }
 
     @Override
     public void run() {
-        while(threadSearcher.isAlive() || !bagOfTask.isEmpty()){
-            addThread();
-        }
-        phaser.releaseThread(indexThread);
-    }
-    private void addThread() {
-        try {
-            FileProcessor fileProcessor = new FileProcessor(bagOfResult, bagOfTask.getFile(), phaser);
+        while(threadCount>0 && stopThread.getFlag()){
+            FileProcessor fileProcessor = new FileProcessor(bagOfResult, bagOfTask, latch, stopThread);
             Thread th = new Thread(fileProcessor);
-            Optional<Integer> index = phaser.takeThread(th);
-            if (index.isPresent()) {
-                fileProcessor.setIndexThread(index.get());
-                th.start();
-            }
-        } catch (InterruptedException e) {
-
+            th.start();
+            threadCount--;
         }
-    }
-
-    public void setIndexThread(int indexThread) {
-        this.indexThread = indexThread;
+        latch.countDown();
     }
 }

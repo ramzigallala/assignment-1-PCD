@@ -3,40 +3,48 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Phaser;
 
 public class FileProcessor implements Runnable{
 
     private final MonitorBufferResult bagOfResult;
-    private final Path nameFile;
+    private final MonitorBufferTask bagOfTask;
+    private final CountDownLatch latch;
+    private Flag stopFlag;
 
-    private final MyLatch phaser;
-    private int indexThread;
-
-    public FileProcessor(MonitorBufferResult bagOfResult, String nameFile, MyLatch phaser) {
+    public FileProcessor(MonitorBufferResult bagOfResult, MonitorBufferTask bagOfTask, CountDownLatch latch, Flag stopThread) {
         this.bagOfResult = bagOfResult;
-        this.nameFile = Path.of(nameFile);
-        this.phaser = phaser;
+        this.bagOfTask = bagOfTask;
+        this.latch = latch;
+        this.stopFlag=stopThread;
     }
 
     @Override
     public void run() {
 
-
-        try {
-            bagOfResult.putProcessed(new Pair<>(nameFile.toString(), getNumLines()));
-        } catch (IOException | InterruptedException ignored) {
-
+        while(bagOfTask.isAvailable() && stopFlag.getFlag()){
+            try {
+                updateBagOfResult();
+            } catch (InterruptedException | IOException e) {
+                throw new RuntimeException(e);
+            }
         }
-        phaser.releaseThread(indexThread);
+        latch.countDown();
+    }
+    private void updateBagOfResult() throws InterruptedException, IOException {
 
+        Optional<String> name = bagOfTask.getFile();
+        if(name.isPresent()){
+            Long numLines= getNumLines(Path.of(name.get()));
+            bagOfResult.putProcessed(new Pair<>(name.get(), numLines));
+        }
 
     }
-    private Long getNumLines() throws IOException {
-        return Files.lines(nameFile).count();
+
+    private Long getNumLines(Path path) throws IOException {
+        return Files.lines(path).count();
     }
 
-    public void setIndexThread(int indexThread){
-        this.indexThread=indexThread;
-    }
 }
